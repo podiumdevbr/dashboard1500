@@ -477,15 +477,23 @@ with t1:
             .reset_index(name="Ligações")
         )
 
+        fig_daily = px.bar(
+          daily,
+          x="Data",
+          y="Ligações",
+          color="Status da ligação",
+          barmode="stack",
+          title="Ligações por dia e status",
+      )
+
+        # Exibe as datas no padrão brasileiro
+        fig_daily.update_xaxes(
+            tickformat="%d/%m",
+            title="Data",
+        )
+
         st.plotly_chart(
-            px.bar(
-                daily,
-                x="Data",
-                y="Ligações",
-                color="Status da ligação",
-                barmode="stack",
-                title="Ligações por dia e status",
-            ),
+            fig_daily,
             use_container_width=True,
         )
 
