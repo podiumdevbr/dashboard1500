@@ -1,4 +1,3 @@
-
 from io import BytesIO
 from pathlib import Path
 
@@ -47,6 +46,7 @@ def load(caminho_arquivo, data_modificacao):
         "Ramal direcionado",
         "Status da ligação",
         "Tempo da ligação",
+        "Turno",
     ]
 
     missing = [c for c in required if c not in df.columns]
@@ -92,6 +92,9 @@ def load(caminho_arquivo, data_modificacao):
         df["Tempo da ligação"],
         errors="coerce",
     ).dt.total_seconds()
+
+    # Tratamento da coluna Turno
+    df["Turno"] = pd.to_numeric(df["Turno"], errors="coerce").fillna(0).astype(int)
 
     # Campos textuais
     colunas_texto = [
@@ -182,8 +185,9 @@ st.caption(f"Fonte dos dados: {ARQUIVO_EXCEL.name}")
 min_date = raw["Data"].min().date()
 max_date = raw["Data"].max().date()
 
-data_referencia_inicio = pd.Timestamp("2026-09-24").date()
-data_referencia_fim = pd.Timestamp("2026-10-06").date()
+# Atualizado para o período do segundo turno (16/10 a 27/10)
+data_referencia_inicio = pd.Timestamp("2026-10-16").date()
+data_referencia_fim = pd.Timestamp("2026-10-27").date()
 
 start = max(min_date, data_referencia_inicio)
 end = min(max_date, data_referencia_fim)
@@ -218,6 +222,15 @@ with st.sidebar:
         inicio, fim = periodo
     else:
         inicio = fim = periodo
+
+    # Novo filtro por Turno
+    turnos_disponiveis = sorted([t for t in raw["Turno"].unique() if t in [1, 2]])
+    opcoes_turno = ["Todos"] + [str(t) for t in turnos_disponiveis]
+    sel_turno = st.selectbox(
+        "Turno",
+        options=opcoes_turno,
+        index=0,
+    )
 
     # Dropdown de status
     statuses = sorted(
@@ -268,6 +281,9 @@ with st.sidebar:
 
 mascara = raw["Data"].dt.date.between(inicio, fim)
 
+if sel_turno != "Todos":
+    mascara &= raw["Turno"].eq(int(sel_turno))
+
 if sel_status != "Todos":
     mascara &= raw["Status da ligação"].eq(sel_status)
 
@@ -302,7 +318,7 @@ fora = int(
 if fora:
     st.caption(
         f"A planilha contém {fora} registro(s) fora do "
-        "período de referência 24/09–06/10/2026."
+        "período de referência 16/10–27/10/2026."
     )
 
 if df.empty:
@@ -789,6 +805,7 @@ with t2:
             "Número de origem",
             "Número de destino",
             "Ramal direcionado",
+            "Turno",
         ]
     ].sort_values(
         ["Data", "Hora"],
@@ -822,6 +839,7 @@ with t3:
         "Ramal direcionado",
         "Status da ligação",
         "Tempo da ligação",
+        "Turno",
     ]
 
     if "Observação" in df.columns:
