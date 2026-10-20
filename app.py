@@ -186,7 +186,7 @@ min_date = raw["Data"].min().date()
 max_date = raw["Data"].max().date()
 
 # Atualizado para o período do segundo turno (16/10 a 27/10)
-data_referencia_inicio = pd.Timestamp("2026-10-16").date()
+data_referencia_inicio = pd.Timestamp("2026-09-21").date()
 data_referencia_fim = pd.Timestamp("2026-10-27").date()
 
 start = max(min_date, data_referencia_inicio)
